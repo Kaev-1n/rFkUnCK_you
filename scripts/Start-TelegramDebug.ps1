@@ -2,7 +2,9 @@
 
 param(
     [ValidateRange(1024, 65535)]
-    [int] $Port = 1443
+    [int] $Port = 1443,
+
+    [switch] $DisableCfTls
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,8 +30,13 @@ if (-not (Test-Path -LiteralPath $proxyPath)) {
 $shortcutPath = [IO.Path]::GetFullPath((Join-Path $localPath "telegram-debug-$PID.url"))
 $proxyLinkPattern = "tg://proxy\?server=127\.0\.0\.1&port=$Port&secret=dd[0-9a-f]{32}\b"
 
+$proxyArguments = @('--host', '127.0.0.1', '--port', [string] $Port)
+if ($DisableCfTls) {
+    $proxyArguments += '--no-secure'
+}
+
 try {
-    & $proxyPath --host 127.0.0.1 --port $Port 2>&1 | ForEach-Object {
+    & $proxyPath @proxyArguments 2>&1 | ForEach-Object {
         $line = $_.ToString()
         if ($line -match $proxyLinkPattern) {
             [IO.File]::WriteAllLines($shortcutPath, @('[InternetShortcut]', "URL=$($Matches[0])"))
