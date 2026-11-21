@@ -6,7 +6,7 @@ namespace Rfkunck.Core;
 
 public sealed record TelegramProxySession(Uri ConnectionLink, Task<int> ExitCode);
 
-public sealed class TelegramProxy(string executablePath)
+public sealed class TelegramProxy(string executablePath, params string[] entryArguments)
 {
     private readonly string executable = Path.GetFullPath(executablePath);
     private readonly SemaphoreSlim lifecycle = new(1, 1);
@@ -16,10 +16,14 @@ public sealed class TelegramProxy(string executablePath)
     public async Task<TelegramProxySession> StartAsync(
         int port,
         bool disableCfTls = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? secret = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(port, 1024);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(port, 65535);
+
+        if (secret is not null && (secret.Length != 32 || !secret.All(Uri.IsHexDigit)))
+            throw new ArgumentException("Expected a 32-character hexadecimal proxy secret.", nameof(secret));
 
         await lifecycle.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -40,10 +44,18 @@ public sealed class TelegramProxy(string executablePath)
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
+            foreach (string argument in entryArguments)
+                proxyInfo.ArgumentList.Add(argument);
+
             proxyInfo.ArgumentList.Add("--host");
             proxyInfo.ArgumentList.Add("127.0.0.1");
             proxyInfo.ArgumentList.Add("--port");
             proxyInfo.ArgumentList.Add(port.ToString(CultureInfo.InvariantCulture));
+            if (secret is not null)
+            {
+                proxyInfo.ArgumentList.Add("--secret");
+                proxyInfo.ArgumentList.Add(secret.ToLowerInvariant());
+            }
             if (disableCfTls)
                 proxyInfo.ArgumentList.Add("--no-secure");
 

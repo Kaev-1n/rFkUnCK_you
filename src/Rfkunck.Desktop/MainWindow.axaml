@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Rfkunck.Desktop.MainWindow"
+        Title="rFkUnCK_you"
+        Width="488" MinWidth="400" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        Background="#111318">
+  <StackPanel Margin="28" Spacing="18">
+    <TextBlock Text="Telegram Desktop" FontSize="28" FontWeight="SemiBold" />
+
+    <Border Background="#1B1F28" CornerRadius="10" Padding="16">
+      <StackPanel Spacing="5">
+        <TextBlock x:Name="StatusText" Text="Прокси выключен" FontSize="17" FontWeight="SemiBold"
+                   TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+        <TextBlock x:Name="StatusDetail" Text="Запусти прокси и подключи его в Telegram."
+                   Foreground="#AAB5C6" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,124">
+        <TextBlock Text="Локальный порт" VerticalAlignment="Center" />
+        <NumericUpDown x:Name="PortInput" Grid.Column="1" Minimum="1024" Maximum="65535"
+                       Increment="1" FormatString="0" AutomationProperties.Name="Локальный порт" />
+      </Grid>
+      <CheckBox x:Name="DisableCfTlsInput" Content="Выключить TLS для CF-прокси и CF-worker" />
+      <TextBlock Text="Меняет шифрование резервного WebSocket до Cloudflare."
+                 Foreground="#AAB5C6" FontSize="12" TextWrapping="Wrap" />
+    </StackPanel>
+
+    <Grid ColumnDefinitions="*,12,*">
+      <Button x:Name="ToggleButton" Content="Включить" Click="ToggleProxy"
+              HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" MinHeight="40"
+              Background="#7798FF" Foreground="#101827" FontWeight="SemiBold" />
+      <Button x:Name="OpenTelegramButton" Grid.Column="2" Content="Открыть в Telegram" Click="OpenTelegram"
+              HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" MinHeight="40"
+              IsEnabled="False" />
+    </Grid>
+  </StackPanel>
+</Window>
